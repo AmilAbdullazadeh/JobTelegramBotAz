@@ -50,7 +50,7 @@ JOB_WEBSITES = {
 }
 
 # Scraping interval in minutes
-SCRAPING_INTERVAL = 30
+SCRAPING_INTERVAL = int(os.getenv("SCRAPING_INTERVAL", "30"))
 
 # Maximum number of pages to scrape per site
-MAX_PAGES_PER_SITE = 3 
+MAX_PAGES_PER_SITE = int(os.getenv("MAX_PAGES_PER_SITE", "3")) 
