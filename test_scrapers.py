@@ -22,7 +22,7 @@ logging.basicConfig(
 )
 
 # Import the scrapers
-from src.scrapers import JobSearchScraper, HelloJobScraper, SmartJobScraper
+from src.scrapers import JobSearchScraper, HelloJobScraper, SmartJobScraper, PashaBankScraper, KapitalBankScraper, BusyScraper, GlorriScraper
 
 def test_scraper(scraper_class, name):
     """Test a scraper and print the results"""
@@ -60,7 +60,11 @@ if __name__ == "__main__":
     scrapers = [
         (JobSearchScraper, "JobSearch.az"),
         (HelloJobScraper, "HelloJob.az"),
-        (SmartJobScraper, "SmartJob.az")
+        (SmartJobScraper, "SmartJob.az"),
+        (PashaBankScraper, "PashaBank.az"),
+        (KapitalBankScraper, "KapitalBank.az"),
+        (BusyScraper, "Busy.az"),
+        (GlorriScraper, "Glorri.az")
     ]
     
     success_count = 0

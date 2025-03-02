@@ -96,7 +96,11 @@ class JobBot:
             f"I'm your Job Posting Bot. I'll notify you about new job postings from:\n"
             f"• JobSearch.az\n"
             f"• HelloJob.az\n"
-            f"• SmartJob.az\n\n"
+            f"• SmartJob.az\n"
+            f"• PashaBank.az\n"
+            f"• KapitalBank.az\n"
+            f"• Busy.az\n"
+            f"• Glorri.az\n\n"
             f"You can set up filters to receive only the jobs you're interested in.\n\n"
             f"Use /help to see available commands."
         )

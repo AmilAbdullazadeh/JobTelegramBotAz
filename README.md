@@ -4,6 +4,10 @@ A Telegram bot that monitors job postings from multiple Azerbaijani job websites
 - jobsearch.az
 - hellojob.az
 - smartjob.az
+- hr.kapitalbank.az
+- careers.pashabank.az
+- busy.az
+- jobs.glorri.az
 
 ## Features
 

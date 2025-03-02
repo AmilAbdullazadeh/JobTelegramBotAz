@@ -230,9 +230,6 @@ class HelloJobScraper(BaseScraper):
         return job_listings
     
     def get_job_details(self, job_url):
-        if not job_url:
-            return None
-            
         html = self.get_page(job_url)
         if not html:
             return None
@@ -249,8 +246,9 @@ class HelloJobScraper(BaseScraper):
             
             if posted_date_str:
                 try:
-                    # Example format: "15.05.2023"
-                    posted_date = datetime.datetime.strptime(posted_date_str, "%d.%m.%Y")
+                    # Example format: "Posted on: 15 May 2023"
+                    date_part = posted_date_str.replace("Posted on:", "").strip()
+                    posted_date = datetime.datetime.strptime(date_part, "%d %B %Y")
                 except ValueError:
                     logger.warning(f"Could not parse date: {posted_date_str}")
             
@@ -331,13 +329,10 @@ class SmartJobScraper(BaseScraper):
         return job_listings
     
     def get_job_details(self, job_url):
-        if not job_url:
-            return None
-            
         html = self.get_page(job_url)
         if not html:
             return None
-        
+            
         soup = BeautifulSoup(html, 'lxml')
         
         try:
@@ -372,6 +367,400 @@ class SmartJobScraper(BaseScraper):
             return None
 
 
+class PashaBankScraper(BaseScraper):
+    """Scraper for PashaBank Careers"""
+    
+    def __init__(self):
+        super().__init__("pashabank")
+    
+    def parse_jobs(self, html):
+        soup = BeautifulSoup(html, 'lxml')
+        job_listings = []
+        
+        # Find all job listings on the page
+        job_elements = soup.select('.vacancy-item, .vacancy-block')
+        
+        for job_element in job_elements:
+            try:
+                # Extract job information
+                title_element = job_element.select_one('.vacancy-title, .vacancy-name')
+                if not title_element:
+                    continue
+                
+                title = title_element.text.strip()
+                
+                url_element = job_element.select_one('a')
+                job_url = url_element['href'] if url_element else None
+                if job_url and not job_url.startswith('http'):
+                    job_url = f"{self.base_url}{job_url}"
+                
+                company = "PASHA Bank"
+                location = "Baku, Azerbaijan"
+                category = "Banking"
+                
+                # Get job details if needed
+                job_details = self.get_job_details(job_url) if job_url else None
+                
+                job_data = {
+                    'title': title,
+                    'company': company,
+                    'location': location,
+                    'category': category,
+                    'url': job_url,
+                    'description': job_details.get('description') if job_details else None,
+                    'posted_date': job_details.get('posted_date') if job_details else None,
+                    'source': self.name,
+                    'external_id': job_details.get('external_id') if job_details else None
+                }
+                
+                job_listings.append(job_data)
+                
+            except Exception as e:
+                logger.error(f"Error parsing job from {self.name}: {e}")
+                continue
+        
+        return job_listings
+    
+    def get_job_details(self, job_url):
+        html = self.get_page(job_url)
+        if not html:
+            return None
+        
+        soup = BeautifulSoup(html, 'lxml')
+        
+        try:
+            description_element = soup.select_one('.vacancy-description, .job-details')
+            description = description_element.text.strip() if description_element else None
+            
+            date_element = soup.select_one('.vacancy-date, .posted-date')
+            posted_date_str = date_element.text.strip() if date_element else None
+            posted_date = None
+            
+            if posted_date_str:
+                try:
+                    # Try to parse the date
+                    posted_date = datetime.datetime.now()  # Fallback to current date
+                except ValueError:
+                    logger.warning(f"Could not parse date: {posted_date_str}")
+            
+            # Try to find an external ID
+            external_id = None
+            if job_url:
+                # Extract ID from URL if possible
+                import re
+                id_match = re.search(r'\/(\d+)(?:\/|$)', job_url)
+                if id_match:
+                    external_id = id_match.group(1)
+            
+            return {
+                'description': description,
+                'posted_date': posted_date,
+                'external_id': external_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting job details from {self.name}: {e}")
+            return None
+
+
+class KapitalBankScraper(BaseScraper):
+    """Scraper for KapitalBank HR"""
+    
+    def __init__(self):
+        super().__init__("kapitalbank")
+    
+    def parse_jobs(self, html):
+        soup = BeautifulSoup(html, 'lxml')
+        job_listings = []
+        
+        # Find all job listings on the page
+        job_elements = soup.select('.vacancy-item, .job-card')
+        
+        for job_element in job_elements:
+            try:
+                # Extract job information
+                title_element = job_element.select_one('.vacancy-title, .job-title')
+                if not title_element:
+                    continue
+                
+                title = title_element.text.strip()
+                
+                url_element = job_element.select_one('a')
+                job_url = url_element['href'] if url_element else None
+                if job_url and not job_url.startswith('http'):
+                    job_url = f"{self.base_url}{job_url}"
+                
+                company = "Kapital Bank"
+                location = "Baku, Azerbaijan"
+                category = "Banking"
+                
+                # Get job details if needed
+                job_details = self.get_job_details(job_url) if job_url else None
+                
+                job_data = {
+                    'title': title,
+                    'company': company,
+                    'location': location,
+                    'category': category,
+                    'url': job_url,
+                    'description': job_details.get('description') if job_details else None,
+                    'posted_date': job_details.get('posted_date') if job_details else None,
+                    'source': self.name,
+                    'external_id': job_details.get('external_id') if job_details else None
+                }
+                
+                job_listings.append(job_data)
+                
+            except Exception as e:
+                logger.error(f"Error parsing job from {self.name}: {e}")
+                continue
+        
+        return job_listings
+    
+    def get_job_details(self, job_url):
+        html = self.get_page(job_url)
+        if not html:
+            return None
+        
+        soup = BeautifulSoup(html, 'lxml')
+        
+        try:
+            description_element = soup.select_one('.vacancy-description, .job-details')
+            description = description_element.text.strip() if description_element else None
+            
+            date_element = soup.select_one('.vacancy-date, .posted-date')
+            posted_date_str = date_element.text.strip() if date_element else None
+            posted_date = None
+            
+            if posted_date_str:
+                try:
+                    # Try to parse the date
+                    posted_date = datetime.datetime.now()  # Fallback to current date
+                except ValueError:
+                    logger.warning(f"Could not parse date: {posted_date_str}")
+            
+            # Try to find an external ID
+            external_id = None
+            if job_url:
+                # Extract ID from URL if possible
+                import re
+                id_match = re.search(r'\/(\d+)(?:\/|$)', job_url)
+                if id_match:
+                    external_id = id_match.group(1)
+            
+            return {
+                'description': description,
+                'posted_date': posted_date,
+                'external_id': external_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting job details from {self.name}: {e}")
+            return None
+
+
+class BusyScraper(BaseScraper):
+    """Scraper for Busy.az"""
+    
+    def __init__(self):
+        super().__init__("busy")
+    
+    def parse_jobs(self, html):
+        soup = BeautifulSoup(html, 'lxml')
+        job_listings = []
+        
+        # Find all job listings on the page
+        job_elements = soup.select('.vacancy-item, .job-item')
+        
+        for job_element in job_elements:
+            try:
+                # Extract job information
+                title_element = job_element.select_one('.vacancy-title, .job-title')
+                if not title_element:
+                    continue
+                
+                title = title_element.text.strip()
+                
+                url_element = job_element.select_one('a')
+                job_url = url_element['href'] if url_element else None
+                if job_url and not job_url.startswith('http'):
+                    job_url = f"{self.base_url}{job_url}"
+                
+                company_element = job_element.select_one('.company-name, .employer')
+                company = company_element.text.strip() if company_element else None
+                
+                location_element = job_element.select_one('.location, .job-location')
+                location = location_element.text.strip() if location_element else "Azerbaijan"
+                
+                category_element = job_element.select_one('.category, .job-category')
+                category = category_element.text.strip() if category_element else "IT"
+                
+                # Get job details if needed
+                job_details = self.get_job_details(job_url) if job_url else None
+                
+                job_data = {
+                    'title': title,
+                    'company': company,
+                    'location': location,
+                    'category': category,
+                    'url': job_url,
+                    'description': job_details.get('description') if job_details else None,
+                    'posted_date': job_details.get('posted_date') if job_details else None,
+                    'source': self.name,
+                    'external_id': job_details.get('external_id') if job_details else None
+                }
+                
+                job_listings.append(job_data)
+                
+            except Exception as e:
+                logger.error(f"Error parsing job from {self.name}: {e}")
+                continue
+        
+        return job_listings
+    
+    def get_job_details(self, job_url):
+        html = self.get_page(job_url)
+        if not html:
+            return None
+        
+        soup = BeautifulSoup(html, 'lxml')
+        
+        try:
+            description_element = soup.select_one('.vacancy-description, .job-description')
+            description = description_element.text.strip() if description_element else None
+            
+            date_element = soup.select_one('.vacancy-date, .posted-date')
+            posted_date_str = date_element.text.strip() if date_element else None
+            posted_date = None
+            
+            if posted_date_str:
+                try:
+                    # Try to parse the date
+                    posted_date = datetime.datetime.now()  # Fallback to current date
+                except ValueError:
+                    logger.warning(f"Could not parse date: {posted_date_str}")
+            
+            # Try to find an external ID
+            external_id = None
+            if job_url:
+                # Extract ID from URL if possible
+                import re
+                id_match = re.search(r'\/(\d+)(?:\/|$)', job_url)
+                if id_match:
+                    external_id = id_match.group(1)
+            
+            return {
+                'description': description,
+                'posted_date': posted_date,
+                'external_id': external_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting job details from {self.name}: {e}")
+            return None
+
+
+class GlorriScraper(BaseScraper):
+    """Scraper for Glorri Jobs"""
+    
+    def __init__(self):
+        super().__init__("glorri")
+    
+    def parse_jobs(self, html):
+        soup = BeautifulSoup(html, 'lxml')
+        job_listings = []
+        
+        # Find all job listings on the page
+        job_elements = soup.select('.job-card, .job-listing')
+        
+        for job_element in job_elements:
+            try:
+                # Extract job information
+                title_element = job_element.select_one('.job-title, .position-title')
+                if not title_element:
+                    continue
+                
+                title = title_element.text.strip()
+                
+                url_element = job_element.select_one('a')
+                job_url = url_element['href'] if url_element else None
+                if job_url and not job_url.startswith('http'):
+                    job_url = f"{self.base_url}{job_url}"
+                
+                company_element = job_element.select_one('.company-name, .employer')
+                company = company_element.text.strip() if company_element else None
+                
+                location_element = job_element.select_one('.location, .job-location')
+                location = location_element.text.strip() if location_element else "Azerbaijan"
+                
+                category_element = job_element.select_one('.category, .job-category')
+                category = category_element.text.strip() if category_element else "Technology"
+                
+                # Get job details if needed
+                job_details = self.get_job_details(job_url) if job_url else None
+                
+                job_data = {
+                    'title': title,
+                    'company': company,
+                    'location': location,
+                    'category': category,
+                    'url': job_url,
+                    'description': job_details.get('description') if job_details else None,
+                    'posted_date': job_details.get('posted_date') if job_details else None,
+                    'source': self.name,
+                    'external_id': job_details.get('external_id') if job_details else None
+                }
+                
+                job_listings.append(job_data)
+                
+            except Exception as e:
+                logger.error(f"Error parsing job from {self.name}: {e}")
+                continue
+        
+        return job_listings
+    
+    def get_job_details(self, job_url):
+        html = self.get_page(job_url)
+        if not html:
+            return None
+        
+        soup = BeautifulSoup(html, 'lxml')
+        
+        try:
+            description_element = soup.select_one('.job-description, .description')
+            description = description_element.text.strip() if description_element else None
+            
+            date_element = soup.select_one('.posted-date, .date')
+            posted_date_str = date_element.text.strip() if date_element else None
+            posted_date = None
+            
+            if posted_date_str:
+                try:
+                    # Try to parse the date
+                    posted_date = datetime.datetime.now()  # Fallback to current date
+                except ValueError:
+                    logger.warning(f"Could not parse date: {posted_date_str}")
+            
+            # Try to find an external ID
+            external_id = None
+            if job_url:
+                # Extract ID from URL if possible
+                import re
+                id_match = re.search(r'\/(\d+)(?:\/|$)', job_url)
+                if id_match:
+                    external_id = id_match.group(1)
+            
+            return {
+                'description': description,
+                'posted_date': posted_date,
+                'external_id': external_id
+            }
+            
+        except Exception as e:
+            logger.error(f"Error getting job details from {self.name}: {e}")
+            return None
+
+
 def get_all_jobs():
     """Scrape jobs from all configured websites"""
     all_jobs = []
@@ -379,7 +768,11 @@ def get_all_jobs():
     scrapers = [
         JobSearchScraper(),
         HelloJobScraper(),
-        SmartJobScraper()
+        SmartJobScraper(),
+        PashaBankScraper(),
+        KapitalBankScraper(),
+        BusyScraper(),
+        GlorriScraper()
     ]
     
     for scraper in scrapers:
