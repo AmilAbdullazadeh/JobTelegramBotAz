@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  jobbot:
+    build: .
+    container_name: job-posting-bot
+    restart: always
+    volumes:
+      - ./data:/app/data
+      - ./.env:/app/.env
+    environment:
+      - TZ=UTC
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3" 
